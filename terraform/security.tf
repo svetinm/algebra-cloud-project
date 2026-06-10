@@ -1,15 +1,15 @@
-# ─── Random password for PostgreSQL ──────────────────────────────────────────
+﻿# â”€â”€â”€ Random password for PostgreSQL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 resource "random_password" "postgres_password" {
   length  = 20
   special = true
 }
 
-# ─── Current client config ────────────────────────────────────────────────────
+# â”€â”€â”€ Current client config â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 data "azurerm_client_config" "current" {}
 
-# ─── Key Vault ────────────────────────────────────────────────────────────────
+# â”€â”€â”€ Key Vault â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 resource "azurerm_key_vault" "kv" {
   name                = "kv-algebra-sm-01"
@@ -21,7 +21,7 @@ resource "azurerm_key_vault" "kv" {
   purge_protection_enabled = false
 
   network_acls {
-    default_action = "Deny"
+    default_action = "Allow"
     bypass         = "AzureServices"
 
     virtual_network_subnet_ids = [
@@ -30,7 +30,7 @@ resource "azurerm_key_vault" "kv" {
     ]
 
     ip_rules = [
-      # VAŽNO: Zamijeni s tvojim javnim IP-om (posjeti https://ifconfig.me)
+      # VAÅ½NO: Zamijeni s tvojim javnim IP-om (posjeti https://ifconfig.me)
       "1.2.3.4"
     ]
   }
@@ -55,7 +55,7 @@ resource "azurerm_key_vault" "kv" {
   tags = local.tags
 }
 
-# ─── Key Vault Secret (PostgreSQL password) ───────────────────────────────────
+# â”€â”€â”€ Key Vault Secret (PostgreSQL password) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 resource "azurerm_key_vault_secret" "postgres_secret" {
   name         = "postgres-admin-password"
@@ -65,7 +65,7 @@ resource "azurerm_key_vault_secret" "postgres_secret" {
   tags = local.tags
 }
 
-# ─── Managed Identity – AKS ───────────────────────────────────────────────────
+# â”€â”€â”€ Managed Identity â€“ AKS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 resource "azurerm_user_assigned_identity" "aks_identity" {
   name                = "aks-identity"
@@ -75,42 +75,42 @@ resource "azurerm_user_assigned_identity" "aks_identity" {
   tags = local.tags
 }
 
-# AKS → ACR (pull images)
+# AKS â†’ ACR (pull images)
 resource "azurerm_role_assignment" "aks_acr_pull" {
   scope                = azurerm_container_registry.acr.id
   role_definition_name = "AcrPull"
   principal_id         = azurerm_user_assigned_identity.aks_identity.principal_id
 }
 
-# AKS → VNet (networking)
+# AKS â†’ VNet (networking)
 resource "azurerm_role_assignment" "aks_network" {
   scope                = azurerm_virtual_network.vnet_app.id
   role_definition_name = "Network Contributor"
   principal_id         = azurerm_user_assigned_identity.aks_identity.principal_id
 }
 
-# AKS → Storage Blobs
+# AKS â†’ Storage Blobs
 resource "azurerm_role_assignment" "aks_blob_access" {
   scope                = azurerm_storage_account.storage.id
   role_definition_name = "Storage Blob Data Contributor"
   principal_id         = azurerm_user_assigned_identity.aks_identity.principal_id
 }
 
-# AKS → Storage Files
+# AKS â†’ Storage Files
 resource "azurerm_role_assignment" "aks_file_access" {
   scope                = azurerm_storage_account.storage.id
   role_definition_name = "Storage File Data SMB Share Contributor"
   principal_id         = azurerm_user_assigned_identity.aks_identity.principal_id
 }
 
-# AKS → Key Vault Secrets
+# AKS â†’ Key Vault Secrets
 resource "azurerm_role_assignment" "aks_kv_access" {
   scope                = azurerm_key_vault.kv.id
   role_definition_name = "Key Vault Secrets User"
   principal_id         = azurerm_user_assigned_identity.aks_identity.principal_id
 }
 
-# ─── Managed Identity – Application Gateway ───────────────────────────────────
+# â”€â”€â”€ Managed Identity â€“ Application Gateway â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 resource "azurerm_user_assigned_identity" "appgw_identity" {
   name                = "appgw-identity"
@@ -134,7 +134,7 @@ resource "azurerm_key_vault_access_policy" "appgw_policy" {
   ]
 }
 
-# ─── Current user access to Storage ──────────────────────────────────────────
+# â”€â”€â”€ Current user access to Storage â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 resource "azurerm_role_assignment" "user_blob_access" {
   scope                = azurerm_storage_account.storage.id
@@ -142,7 +142,7 @@ resource "azurerm_role_assignment" "user_blob_access" {
   principal_id         = data.azurerm_client_config.current.object_id
 }
 
-# ─── NSG – Jump VM ────────────────────────────────────────────────────────────
+# â”€â”€â”€ NSG â€“ Jump VM â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 resource "azurerm_network_security_group" "nsg_jump" {
   name                = "nsg-jump"
@@ -157,7 +157,7 @@ resource "azurerm_network_security_group" "nsg_jump" {
     protocol                   = "Tcp"
     source_port_range          = "*"
     destination_port_range     = "3389"
-    # VAŽNO: Zamijeni s tvojim javnim IP-om
+    # VAÅ½NO: Zamijeni s tvojim javnim IP-om
     source_address_prefix      = "1.2.3.4"
     destination_address_prefix = "*"
   }

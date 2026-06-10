@@ -1,4 +1,4 @@
-resource "azurerm_network_interface" "jump_nic" {
+﻿resource "azurerm_network_interface" "jump_nic" {
   name                = "jump-nic"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
@@ -18,10 +18,9 @@ resource "azurerm_windows_virtual_machine" "jump" {
   location              = azurerm_resource_group.rg.location
   resource_group_name   = azurerm_resource_group.rg.name
   network_interface_ids = [azurerm_network_interface.jump_nic.id]
-  size                  = "Standard_B2ats_v2"
+  size                  = "Standard_B2s"
 
   admin_username = "azureuser"
-  # VAŽNO: Promijeni lozinku prije deploymenta!
   admin_password = "P@ssw0rd!Algebra2026"
 
   os_disk {
