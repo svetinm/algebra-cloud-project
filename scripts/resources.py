@@ -1,5 +1,5 @@
-"""
-resources.py – Lista Azure resurse pomoću Python SDK-a
+﻿"""
+resources.py â€“ Lista Azure resurse pomoÄ‡u Python SDK-a
 Instaliraj: pip install azure-identity azure-mgmt-resource
 """
 
@@ -8,8 +8,8 @@ from azure.mgmt.resource import ResourceManagementClient
 import os
 
 RESOURCE_GROUP = "rg-algebra-project"
-# Postavi svoju Subscription ID ili je učitaj iz env varijable
-SUBSCRIPTION_ID = os.environ.get("AZURE_SUBSCRIPTION_ID", "YOUR-SUBSCRIPTION-ID")
+# Postavi svoju Subscription ID ili je uÄitaj iz env varijable
+SUBSCRIPTION_ID = os.environ.get("AZURE_SUBSCRIPTION_ID", "f1b2cd54-bdee-46bb-8185-d0f4cc3cf10e")
 
 credential = DefaultAzureCredential()
 client = ResourceManagementClient(credential, SUBSCRIPTION_ID)
